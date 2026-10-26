@@ -104,13 +104,17 @@ class App {
         return data;
     }
     std::wstring Tooltip() const {
-        std::wstring text=L"MCHOSE G7 · ";
+        std::wstring text=DeviceName()+L" · ";
         if(result_.valid)text+=std::to_wstring(result_.percent)+L"%"+(result_.charging?L" · 充电中":L" · 2.4G");
         else text+=result_.receiverPresent?L"暂不可读 / 可能休眠":L"未连接";
         if(!result_.valid&&everRead_)text+=L"\n上次 "+std::to_wstring(lastGood_.percent)+L"% · "+ClockText(lastGood_.sampled);
         else if(result_.valid)text+=L"\n更新于 "+ClockText(result_.sampled);
         else text+=L"\n"+result_.message;
         return text;
+    }
+    std::wstring DeviceName() const {
+        if(!result_.modelName.empty())return result_.modelName;
+        return everRead_?lastGood_.modelName:L"MCHOSE 鼠标";
     }
     void UpdateTray(bool force=false){
         dark_=DarkTheme();int size=GetSystemMetricsForDpi(SM_CXSMICON,dpi_);
@@ -155,6 +159,7 @@ class App {
     }
     void OnResult(std::unique_ptr<BatteryResult> response){
         busy_=false;++queryCount_;result_=std::move(*response);
+        if(!result_.devicePath.empty()&&result_.devicePath!=lastGood_.devicePath)everRead_=false;
         if(result_.valid){lastGood_=result_;everRead_=true;}
         std::wstring status=result_.valid?L"Device online":result_.message;
         if(status!=lastStatus_){Log(paths_,Utf8(status));lastStatus_=status;}
@@ -173,7 +178,7 @@ class App {
     }
     void ShowPopup(){
         EnsureFonts(true);
-        if(!popup_)popup_=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_NOACTIVATE|WS_EX_TOPMOST,L"G7BatteryTray.Popup",L"G7 电量详情",WS_POPUP|WS_BORDER,
+        if(!popup_)popup_=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_NOACTIVATE|WS_EX_TOPMOST,L"G7BatteryTray.Popup",L"鼠标电量详情",WS_POPUP|WS_BORDER,
                                           0,0,1,1,window_,nullptr,GetModuleHandleW(nullptr),this);
         if(!popup_)return;
         POINT cursor;GetCursorPos(&cursor);MONITORINFO monitor{};monitor.cbSize=sizeof(monitor);
@@ -194,7 +199,7 @@ class App {
             auto old=SelectObject(dc,font);SetTextColor(dc,color);RECT rect{Scale(x,dpi_),Scale(y,dpi_),Scale(x+width,dpi_),Scale(y+height,dpi_)};
             DrawTextW(dc,value.c_str(),-1,&rect,DT_LEFT|DT_TOP|DT_NOPREFIX|DT_WORDBREAK);SelectObject(dc,old);
         };
-        text(L"MCHOSE G7",22,17,290,25,popupFont_,color);
+        text(DeviceName(),22,17,298,25,popupFont_,color);
         std::wstring percent=result_.valid?std::to_wstring(result_.percent)+L"%":L"—";
         text(percent,22,44,180,58,bigFont_,color);
         DrawIconEx(dc,Scale(264,dpi_),Scale(50,dpi_),icon_,Scale(40,dpi_),Scale(40,dpi_),0,nullptr,DI_NORMAL);
@@ -207,7 +212,7 @@ class App {
     }
     void Menu(){
         HMENU menu=CreatePopupMenu();
-        auto status=result_.valid?L"MCHOSE G7  ·  "+std::to_wstring(result_.percent)+L"%":L"MCHOSE G7  ·  暂不可读";
+        auto status=DeviceName()+(result_.valid?L"  ·  "+std::to_wstring(result_.percent)+L"%":L"  ·  暂不可读");
         AppendMenuW(menu,MF_STRING|MF_DISABLED,0,status.c_str());AppendMenuW(menu,MF_SEPARATOR,0,nullptr);
         AppendMenuW(menu,MF_STRING,Details,L"电量详情");AppendMenuW(menu,MF_STRING|(busy_?MF_GRAYED:0),Refresh,L"立即刷新");
         AppendMenuW(menu,MF_STRING,Settings,L"提醒与刷新设置…");AppendMenuW(menu,MF_STRING|(notifying_?MF_GRAYED:0),TestNotification,L"测试 Windows 通知");
@@ -265,7 +270,7 @@ class App {
         if(settings_){SetForegroundWindow(settings_);return;}
         EnsureFonts();
         RECT area{0,0,Scale(460,dpi_),Scale(505,dpi_)};AdjustWindowRectExForDpi(&area,WS_CAPTION|WS_SYSMENU,FALSE,WS_EX_APPWINDOW,dpi_);
-        settings_=CreateWindowExW(WS_EX_APPWINDOW,L"G7BatteryTray.Settings",L"G7BatteryTray 设置",WS_CAPTION|WS_SYSMENU,
+        settings_=CreateWindowExW(WS_EX_APPWINDOW,L"G7BatteryTray.Settings",L"MCHOSEBatteryTray 设置",WS_CAPTION|WS_SYSMENU,
             CW_USEDEFAULT,CW_USEDEFAULT,area.right-area.left,area.bottom-area.top,nullptr,nullptr,GetModuleHandleW(nullptr),this);
         if(!settings_)return;
         Control(L"BUTTON",L"启用低电量定时提醒",BS_AUTOCHECKBOX|WS_TABSTOP,20,18,400,25,101);
@@ -322,6 +327,7 @@ class App {
             RECT rect{};if(settings_)GetWindowRect(settings_,&rect);
             AtomicJson(paths_.data/L"status.json",{{"running",true},{"processId",GetCurrentProcessId()},{"trayRegistered",trayAdded_},
                 {"batteryValid",result_.valid},{"batteryPercent",result_.percent},{"charging",result_.charging},{"receiverPresent",result_.receiverPresent},
+                {"model",Utf8(DeviceName())},{"protocol",result_.protocol},{"vendorId",result_.vendorId},{"productId",result_.productId},
                 {"queryCount",queryCount_},{"lastSample",DateKey(result_.sampled)+" "+Utf8(ClockText(result_.sampled))},
                 {"notificationBusy",notifying_},
                 {"settingsVisible",settings_&&IsWindowVisible(settings_)},{"settingsBounds",{rect.left,rect.top,rect.right,rect.bottom}},
@@ -380,7 +386,7 @@ public:
         deviceNotify_=RegisterDeviceNotificationW(window_,&filter,DEVICE_NOTIFY_WINDOW_HANDLE);
         result_.message=L"正在读取电量…";UpdateTray();
         worker_=std::thread([this]{Worker();});StartQuery();ArmSchedule();
-        Log(paths_,"G7BatteryTray 1.1.0 started");
+        Log(paths_,"MCHOSEBatteryTray 1.2.0 started");
         if(details)PostMessageW(window_,ShowDetailsMessage,0,0);if(test)PostMessageW(window_,TestNotificationMessage,0,0);
         if(settings)PostMessageW(window_,SettingsMessage,0,0);
         MSG message;while(GetMessageW(&message,nullptr,0,0)>0){
@@ -419,6 +425,7 @@ int WINAPI wWinMain(HINSTANCE,HINSTANCE,PWSTR,int){
             paths.Ensure();Handle stop(CreateEventW(nullptr,TRUE,FALSE,nullptr));DeviceReader reader;auto result=reader.Query(stop.get());
             AtomicJson(paths.data/L"probe.json",{{"valid",result.valid},{"batteryPercent",result.percent},{"charging",result.charging},
                 {"receiverPresent",result.receiverPresent},{"elapsedMs",result.elapsedMs},{"message",Utf8(result.message)},
+                {"model",Utf8(result.modelName)},{"protocol",result.protocol},{"vendorId",result.vendorId},{"productId",result.productId},
                 {"timestamp",DateKey(result.sampled)+" "+Utf8(ClockText(result.sampled))},{"response",result.response}});
             return result.valid?0:2;
         }
@@ -439,6 +446,6 @@ int WINAPI wWinMain(HINSTANCE,HINSTANCE,PWSTR,int){
     }catch(const std::exception& e){
         if(!notificationCommand.empty())return 1;
         auto text=L"程序无法启动：\n"+Wide(e.what())+L"\n\n请确认整个文件夹可写，且 data\\config.json 格式正确。";
-        MessageBoxW(nullptr,text.c_str(),L"G7BatteryTray",MB_OK|MB_ICONERROR);return 1;
+        MessageBoxW(nullptr,text.c_str(),AppName,MB_OK|MB_ICONERROR);return 1;
     }
 }

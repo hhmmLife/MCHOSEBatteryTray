@@ -1,121 +1,129 @@
 # MCHOSEBatteryTray
 
-轻量级 Windows 鼠标电量托盘工具。当前版本 **1.1.0**，支持 **迈从 MCHOSE G7 的 2.4G 接收器**，使用 C++20 和原生 Win32 API 实现。
+迈从鼠标的 **2.4G 电量监控与充电提醒**，安静运行在 Windows 系统托盘。
 
-## 功能
+原生 C++ / Win32 实现，无需安装额外运行库。配置和日志随程序目录保存，可整目录迁移。
 
-- 在系统托盘显示鼠标电量；悬停查看百分比，双击查看详情。
-- 电量图标随状态变化：50% 及以上为青绿色，25–49% 为黄色，低于 25% 为红色，充电时带闪电标记。
-- 默认每 60 秒查询一次；设备离线或暂时不可读时，降为至少每 5 分钟一次。
-- 默认在周一至周五 **20:59** 重新检查电量，**低于 25% 且未充电**时发送 Windows 通知。
-- 支持自定义时间、阈值、查询间隔、星期、跳过日期和额外工作日期。
-- 同一天最多提醒一次；当天错过检查可在启动、恢复运行或设备恢复可读时补检。
-- 支持登录自启、手动刷新、测试通知和清理系统登记。
-- 便携运行，配置、状态和日志集中保存在程序旁的 `data/` 中。
+**当前版本：1.2.0 · Windows 10 / 11 x64**
 
-电量显示使用设备返回的原始百分比。官方网页版驱动会将数值分档显示，因此本程序显示 81–83% 时，官网可能显示 80%。本程序不为对齐官网而取整或平滑数值。
+## 能做什么
 
-## 支持范围
+- **随时查看电量**：悬停查看原始百分比，双击查看型号、充电状态和更新时间。
+- **用颜色提示状态**：50% 及以上为青绿色，25–49% 为黄色，低于 25% 为红色；充电时显示闪电标记。
+- **下班前提醒充电**：默认周一至周五 20:59 检查，低于 25% 且未充电时发送 Windows 通知。
+- **按自己的作息设置**：可调整提醒时间、阈值、查询间隔和星期，设置跳过日期与额外工作日期。
+- **保持轻量**：默认每 60 秒查询一次，离线或暂不可读时降为至少每 5 分钟一次；支持登录自启、手动刷新和测试通知。
 
-- Windows 10 / 11，x64。
-- MCHOSE G7，2.4G 连接。
-- 已验证的接口：VID `A8A5`、PID `2255`、Usage Page `FF01`、Usage `0010`，输入和输出报告均为 65 字节。
+## 开始使用
 
-目前只验证了以上设备，不代表其他迈从型号、有线连接或蓝牙连接也能读取。
+运行包发布入口：[Releases](https://github.com/hhmmLife/MCHOSEBatteryTray/releases)。未提供所需版本时，可按下文[从源码构建](#源码构建)。
 
-## 使用
+1. 完整解压 `win-x64.zip`，将整个文件夹放到可写的固定目录。
+2. 双击 `G7BatteryTray.exe`，程序进入任务栏右下角托盘；图标可能位于“显示隐藏的图标”中，可手动拖到常显区域。
+3. 悬停查看电量，双击打开详情，右键调整设置。
+4. 右键选择“测试 Windows 通知”，确认提醒通道可用。需要登录自启时，在菜单中开启；新配置默认关闭。
 
-1. 从源码构建后，将整个 `build/portable/G7BatteryTray/` 文件夹放在可写目录。
-2. 双击 `G7BatteryTray.exe`，图标会出现在任务栏右下角，也可能位于隐藏图标区域。
-3. 悬停查看电量，双击查看详情，右键打开设置或刷新。
-4. 使用右键菜单中的“测试 Windows 通知”检查通知通道。新配置默认关闭登录自启，可按需开启。
+程序文件名沿用 `G7BatteryTray.exe`，便于旧版本原地升级；项目名称为 MCHOSEBatteryTray。
 
-仓库名为 MCHOSEBatteryTray，当前程序文件名仍为 `G7BatteryTray.exe`。
+## 兼容型号
 
-提醒使用电脑本地时间。首次到期检查时，如果电量充足或正在充电，也会记录当天已检查，当晚不会追加提醒。程序退出或电脑关闭时无法检查，也不会主动唤醒电脑；跨天不补发。Windows 通知权限和勿扰设置会影响横幅显示。
+1.2.0 为以下 **27 个型号变体**实现了电量查询。**目前仅 G7 完成本项目的本机实测，其余型号完成协议核对和模拟通信测试，仍待对应实机验证。**
 
-## 构建与测试
+| 系列 | 已实现协议适配的型号 |
+| --- | --- |
+| G7 / G3 / A7e | G7、G7 Pro、G3 A、G3 V2、G3 V2 Pro、A7e、A7e Pro |
+| M7 | M7（含 1K 别名）、M7 Pro、M7 Ultra |
+| L7 | L7、L7 Pro、L7 Pro+、L7 Ultra、L7 Ultra+ |
+| A7 | A7、A7 Pro、A7 Ultra、A7 Ultra(RE)、A7 V2 Pro、A7 V2 Pro+、A7 V2 Ultra、A7 V2 Ultra+、A7X Ultra |
+| K7 / AX5 | K7 Ultra、AX5 V2 |
+| A5 | 第一代 A5 Pro Max（2023，1K / 4K 接收器） |
 
-需要 Windows、PowerShell 和 **LLVM-MinGW x64 UCRT** 工具链。当前版本使用 LLVM-MinGW `20261020` 构建，无需为运行程序另行安装 C++ 运行库。
+当前使用一个托盘图标，同时监控一只鼠标，优先继续读取上次成功的接收器。蓝牙、独立有线设备和未列出的系列不在兼容承诺中。同名鼠标也可能存在不同硬件版本，完整的接收器身份和使用边界见 [COMPATIBILITY.md](COMPATIBILITY.md)。
 
-```powershell
-git clone git@github.com:hhmmLife/MCHOSEBatteryTray.git
-cd MCHOSEBatteryTray
-.\build.ps1 -ToolchainRoot 'D:\tools\llvm-mingw-20261020-ucrt-x86_64' -Tests
-```
+## 提醒如何工作
 
-工具链可从 [LLVM-MinGW 官方仓库](https://github.com/mstorsjo/llvm-mingw) 获取。将示例中的路径替换为自己的工具链目录；若编译器已加入 PATH，可省略 `-ToolchainRoot`。
+默认在电脑本地时间 **周一至周五 20:59** 重新查询电量，仅在电量 **严格低于 25%** 且未充电时提醒。25% 不提醒，正在充电也不提醒；节假日和调休可在设置中维护。
 
-- 运行包：`build/portable/G7BatteryTray/`
-- 编译和测试中间文件：`build/intermediate/`
-- `-Tests` 执行时间与阈值、配置持久化、图标与 GDI 生命周期测试。
-- 可用 `-OutputRoot` 指定运行包的绝对输出路径。
-- 修改静态图标后，可执行 `assets/create-icon.ps1` 重新生成 `assets/app.ico`。
+每天完成一次计划检查。如果到期时电量充足或正在充电，也会记为当天已检查，当晚继续耗电不会追加提醒。当天错过检查，会在程序启动、电脑恢复或设备恢复可读时补检，跨天不补发。
 
-## 目录
+程序需要保持运行，不会主动唤醒电脑。通知横幅是否显示，取决于 Windows 通知权限和勿扰设置。每日检查与去重按当前监控的鼠标执行。
 
-```text
-src/                         原生窗口、设备查询、通知、配置和托盘图标
-assets/                      图标、资源和应用清单
-tests/                       自动测试
-third_party/                 nlohmann/json 及其许可证
-build.ps1                    构建与测试入口
-README.txt                   随运行包分发的使用说明
-VERIFICATION.txt             验证记录与性能测量说明
-THIRD-PARTY-NOTICES.txt      第三方许可声明
-```
+## 资源占用
 
-运行时生成的文件集中放在 EXE 同目录下：
+使用原生窗口、事件等待和后台查询线程。通知通过同一 EXE 的短暂子进程发送，结束后退出；平时只有一个常驻进程。运行时不下载型号表，也不通过清空工作集压低内存读数。
 
-```text
-data/config.json             用户配置
-data/state.json              当天检查与通知去重状态
-data/logs/app.log             当前日志
-data/logs/app.previous.log    上一份日志
-data/probe.json               仅 --probe 生成的诊断结果
-data/status.json              仅 --status 生成的运行状态
-```
-
-每份日志在约 256 KiB 时轮转，最多保留当前和上一份。JSON 使用同目录临时文件写入后原子替换。运行数据、编译产物及工具链不纳入 Git。
-
-## 性能
-
-常驻程序使用原生消息循环和事件等待，设备查询在工作线程执行。通知发送及其 COM/WinRT 初始化交给同一 EXE 的短暂子进程，完成后退出。图标使用小尺寸 DIB 绘制，无 GDI+ 依赖，不通过清空工作集压低内存读数。
-
-2026-10-26 本机连续采样约 3 分钟、37 次，程序按 60 秒间隔完成 3 次查询：
+1.2.0 在本机操作设置窗口和通知后，连续采样约 3 分钟、37 次，期间正常完成 3 次定时查询：
 
 | 指标 | 实测 |
 | --- | --- |
-| CPU 时间增量 | 0.03125 秒，约占单核 0.017% |
-| 私有工作集 | 2.10 MiB，采样期间未增长 |
-| 私有提交 | 2.83 MiB，采样期间未增长 |
-| 句柄 / 线程 | 191 / 4，采样期间保持不变 |
+| 私有工作集 | 1.95–2.00 MiB |
+| 私有提交 | 2.55–2.66 MiB |
+| 总工作集（含共享系统 DLL） | 约 12 MiB |
+| CPU 累计时间增量 | 0 秒，处于本轮计数精度内 |
 
-这些数值来自单台电脑的短时测量，会随 Windows 版本、窗口操作和系统环境变化；不能替代长期稳定性验证。总工作集还包含共享 DLL 页面，与私有工作集不同。更多记录见 [VERIFICATION.txt](VERIFICATION.txt)。
+采样未见持续内存或句柄增长。CPU 增量为零不代表完全没有开销；以上为单台电脑的短时测量，数值会随系统和操作变化。完整方法、测试结果和限制见 [VERIFICATION.txt](VERIFICATION.txt)。
 
-## 移动与移除
+## 数据、迁移与移除
 
-退出后可移动整个运行目录。在新位置再次运行，程序会修复已启用的自启路径和通知路径。
+运行数据集中保存在 EXE 同目录下：
 
-通知和自启需要少量当前用户级 Windows 登记，不需要管理员权限。删除程序前，选择右键菜单中的“移除系统登记并退出”，再删除整个文件夹。普通退出保留登记和配置。登记位置及完整配置字段见 [README.txt](README.txt)。
+```text
+G7BatteryTray.exe
+data/
+├── config.json          用户配置
+├── state.json           当天检查与通知去重状态
+└── logs/                当前和上一份日志，每份约 256 KiB 上限
+```
 
-当前已知限制：清理系统登记会在界面线程等待清理子进程，异常情况下可能等待约 15–16 秒；日常后台查询和通知发送使用工作线程。
+退出程序后可移动整个文件夹。在新位置再次运行，会修复已启用的自启路径和通知路径。升级时保留原来的 `data/`；修改配置文件前应先退出程序。
 
-## 命令行
+自启和通知使用少量当前用户级 Windows 登记，无需管理员权限。删除程序前，先选择右键菜单中的“移除系统登记并退出”，再删除文件夹。普通“退出”保留设置与登记。
 
-| 参数 | 功能 |
-| --- | --- |
-| `--probe` | 查询一次，写入 `data/probe.json` 后退出，不登记通知或自启 |
-| `--status` | 让运行中的实例写出 `data/status.json` |
-| `--settings` | 打开设置 |
-| `--show-details` | 显示详情，未运行时启动程序 |
-| `--test-notification` | 发送测试通知，不改变每日提醒去重状态 |
-| `--background` | 托盘启动，不打开窗口 |
-| `--exit` | 退出运行中的实例 |
-| `--unregister` | 清理本程序的系统登记并退出，保留配置和日志 |
+## 常见问题
 
-## 参考与第三方依赖
+**为什么官网显示 80%，这里显示 81–83%？**
 
-- 表现形式参考 [InphicBatteryTray](https://github.com/Tan-TanZi/InphicBatteryTray)。图标和程序实现为本项目编写，未复制其素材。
-- G7 电量协议与[迈从官方网页驱动](https://www.mchose.com.cn/gmouse/)的 `getBatteryInfo` 核对，仅查询厂商状态接口，不读取鼠标移动或按键数据，不修改 DPI、按键或灯光。
-- 使用 [nlohmann/json](https://github.com/nlohmann/json) v3.12.0（MIT），许可证见 [third_party/LICENSE-json.txt](third_party/LICENSE-json.txt) 和 [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt)。
+G7 官方网页驱动会对电量分档显示。本程序保留设备返回的原始百分比，不为对齐官网而取整或平滑。
+
+**为什么图标变灰了？**
+
+接收器未连接、鼠标休眠或暂时读不到有效数据时会灰显；已有历史读数时仍可查看上次电量和时间，不会把读取失败显示成 0%。
+
+**移除系统登记时为什么需要等待？**
+
+当前版本会等待清理子进程，异常情况下界面可能等待约 15–16 秒。这不影响平时的后台查询和通知发送。
+
+## 源码构建
+
+需要 Windows、PowerShell 和 [LLVM-MinGW x64 UCRT](https://github.com/mstorsjo/llvm-mingw) 工具链。当前版本使用 LLVM-MinGW `20261020` 构建。
+
+```powershell
+git clone https://github.com/hhmmLife/MCHOSEBatteryTray.git
+cd MCHOSEBatteryTray
+.\build.ps1 -ToolchainRoot 'D:\tools\llvm-mingw' -Tests
+```
+
+将示例路径替换为自己的工具链目录。若编译器已加入 PATH，可省略 `-ToolchainRoot`。运行包生成于 `build/portable/G7BatteryTray/`，编译与测试中间文件位于 `build/intermediate/`。
+
+`-Tests` 执行设备筛选与模拟通信、提醒规则、配置持久化、图标和 GDI 生命周期检查；1.2.0 共通过 578 项自动检查。
+
+构建后可生成运行包、源码包和 SHA-256 校验文件：
+
+```powershell
+.\package.ps1
+```
+
+交付文件位于 `dist/`，不包含用户配置、日志、工具链或编译中间文件。源码主要位于 `src/`，图标资源位于 `assets/`，测试位于 `tests/`。
+
+## 更多文档
+
+- [兼容范围](COMPATIBILITY.md)：完整型号、接收器身份及实机验证程度。
+- [使用说明](README.txt)：配置字段、命令行参数和系统登记位置。
+- [协议与维护](PROTOCOLS.md)：三类电量协议、来源和 I/O 处理。
+- [验证记录](VERIFICATION.txt)：性能实测、自动检查和集成回归。
+
+## 致谢与依赖
+
+表现形式参考 [InphicBatteryTray](https://github.com/Tan-TanZi/InphicBatteryTray)，图标和实现为本项目编写。协议核对来源列于 [PROTOCOLS.md](PROTOCOLS.md)。程序只查询支持型号的厂商状态接口，不修改 DPI、按键、灯光、配对或固件。
+
+使用 [nlohmann/json](https://github.com/nlohmann/json) v3.12.0（MIT），完整第三方许可见 [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt)。

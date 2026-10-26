@@ -37,7 +37,7 @@ static HRESULT RegisterShortcut(const Paths& paths) {
     ComPtr<IShellLinkW> link;hr=CoCreateInstance(CLSID_ShellLink,nullptr,CLSCTX_INPROC_SERVER,IID_PPV_ARGS(&link));
     if(FAILED(hr))return hr;
     link->SetPath(paths.exe.c_str());link->SetArguments(L"--show-details");link->SetWorkingDirectory(paths.root.c_str());
-    link->SetIconLocation(paths.exe.c_str(),0);link->SetDescription(L"MCHOSE G7 鼠标电量与充电提醒");
+    link->SetIconLocation(paths.exe.c_str(),0);link->SetDescription(L"迈从鼠标电量与充电提醒");
     ComPtr<IPropertyStore> store;hr=link.As(&store);if(FAILED(hr))return hr;
     PROPVARIANT value{};hr=InitPropVariantFromString(AppId,&value);
     if(SUCCEEDED(hr))hr=store->SetValue(PKEY_AppUserModel_ID,value);PropVariantClear(&value);if(FAILED(hr))return hr;
@@ -109,7 +109,7 @@ bool Notifications::Initialize() {
         HKEY key=nullptr;
         LONG status=RegCreateKeyExW(HKEY_CURRENT_USER,AumidKey,0,nullptr,0,KEY_SET_VALUE,nullptr,&key,nullptr);
         if(status==ERROR_SUCCESS){
-            const wchar_t* name=L"G7 鼠标电量";
+            const wchar_t* name=NotificationName;
             const wchar_t* clsid=L"{E9C2D221-F9CF-47DD-B821-4C12CE418965}";
             status=RegSetValueExW(key,L"DisplayName",0,REG_SZ,reinterpret_cast<const BYTE*>(name),DWORD((wcslen(name)+1)*2));
             if(status==ERROR_SUCCESS)status=RegSetValueExW(key,L"CustomActivator",0,REG_SZ,reinterpret_cast<const BYTE*>(clsid),DWORD((wcslen(clsid)+1)*2));
@@ -185,9 +185,9 @@ int RunNotificationCommand(const Paths& paths,const std::wstring& command,int pe
         else if(command==L"--notification-unregister"){notifications.RemoveRegistration();success=true;}
         else if(notifications.Initialize()){
             if(command==L"--notification-register")success=true;
-            else if(command==L"--notification-test")success=notifications.Show(L"G7 电量提醒测试",L"这是一条测试通知，定时提醒记录不会改变。",true);
+            else if(command==L"--notification-test")success=notifications.Show(L"迈从鼠标电量提醒测试",L"这是一条测试通知，定时提醒记录不会改变。",true);
             else if(command==L"--notification-battery"&&percent>=0&&percent<=100)
-                success=notifications.Show(L"鼠标需要充电",L"MCHOSE G7 当前电量 "+std::to_wstring(percent)+L"%，建议连接充电线。");
+                success=notifications.Show(L"鼠标需要充电",L"迈从鼠标当前电量 "+std::to_wstring(percent)+L"%，建议连接充电线。");
         }
     }
     RoUninitialize();return success?0:1;

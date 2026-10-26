@@ -15,13 +15,18 @@ Push-Location $PSScriptRoot
 try {
     & $taskWindres '-I' 'assets' '-i' 'assets/app.rc' '-o' $taskResource '-O' 'coff'
     if ($LASTEXITCODE) { throw 'Resource compilation failed.' }
-    $taskSources = @('src/app.cpp','src/storage.cpp','src/device.cpp','src/notifications.cpp','src/notification_client.cpp','src/tray_icon.cpp')
+    $taskSources = @('src/app.cpp','src/storage.cpp','src/device.cpp','src/device_protocol.cpp','src/notifications.cpp','src/notification_client.cpp','src/tray_icon.cpp')
     & $taskCompiler '-std=c++20' '-Os' '-DNDEBUG' '-Wall' '-Wextra' '-Wpedantic' '-Wno-unknown-pragmas' '-municode' '-mwindows' '-static' '-Wl,--strip-all' @taskSources $taskResource '-o' (Join-Path $OutputRoot 'G7BatteryTray.exe') '-lcfgmgr32' '-lhid' '-lshell32' '-lshlwapi' '-lpropsys' '-lole32' '-loleaut32' '-luuid' '-lruntimeobject' '-lcomctl32' '-ladvapi32' '-limm32'
     if ($LASTEXITCODE) { throw 'Application compilation failed.' }
     Copy-Item -LiteralPath 'README.txt' -Destination $OutputRoot -Force
     Copy-Item -LiteralPath 'THIRD-PARTY-NOTICES.txt' -Destination $OutputRoot -Force
+    Copy-Item -LiteralPath 'README.md','COMPATIBILITY.md','PROTOCOLS.md' -Destination $OutputRoot -Force
     if (Test-Path -LiteralPath 'VERIFICATION.txt') { Copy-Item -LiteralPath 'VERIFICATION.txt' -Destination $OutputRoot -Force }
     if ($Tests) {
+        & $taskCompiler '-std=c++20' '-O2' '-Wall' '-Wextra' '-static' 'tests/device_tests.cpp' 'src/device_protocol.cpp' '-o' (Join-Path $taskBuild 'device_tests.exe')
+        if ($LASTEXITCODE) { throw 'Device test compilation failed.' }
+        & (Join-Path $taskBuild 'device_tests.exe')
+        if ($LASTEXITCODE) { throw 'Device protocol tests failed.' }
         & $taskCompiler '-std=c++20' '-O2' '-Wall' '-Wextra' '-static' 'tests/model_tests.cpp' '-o' (Join-Path $taskBuild 'model_tests.exe')
         if ($LASTEXITCODE) { throw 'Test compilation failed.' }
         & (Join-Path $taskBuild 'model_tests.exe')

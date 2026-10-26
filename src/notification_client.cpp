@@ -7,6 +7,9 @@ bool NotificationIdentityCurrent(const Paths& paths){
     if(RegGetValueW(HKEY_CURRENT_USER,key,nullptr,RRF_RT_REG_SZ,nullptr,command,&size)!=ERROR_SUCCESS)return false;
     auto expected=L"\""+paths.exe.wstring()+L"\" --toast-activated";
     if(expected!=command)return false;
+    wchar_t display[128]{};DWORD displaySize=sizeof(display);
+    if(RegGetValueW(HKEY_CURRENT_USER,L"Software\\Classes\\AppUserModelId\\G7BatteryTray.Desktop",L"DisplayName",RRF_RT_REG_SZ,
+                   nullptr,display,&displaySize)!=ERROR_SUCCESS||std::wstring_view(display)!=NotificationName)return false;
     DWORD activatorSize=0;
     if(RegGetValueW(HKEY_CURRENT_USER,L"Software\\Classes\\AppUserModelId\\G7BatteryTray.Desktop",L"CustomActivator",RRF_RT_REG_SZ,nullptr,nullptr,&activatorSize)!=ERROR_SUCCESS)return false;
     wchar_t appData[32768]{};DWORD count=GetEnvironmentVariableW(L"APPDATA",appData,DWORD(std::size(appData)));

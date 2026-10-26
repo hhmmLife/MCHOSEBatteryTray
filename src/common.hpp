@@ -16,7 +16,9 @@
 
 namespace g7 {
 namespace fs = std::filesystem;
-inline constexpr wchar_t AppName[] = L"G7BatteryTray";
+inline constexpr wchar_t AppName[] = L"MCHOSEBatteryTray";
+inline constexpr wchar_t StartupValueName[] = L"G7BatteryTray"; // Preserve existing installations.
+inline constexpr wchar_t NotificationName[] = L"迈从鼠标电量";
 inline constexpr wchar_t AppId[] = L"G7BatteryTray.Desktop";
 inline constexpr wchar_t WindowClass[] = L"G7BatteryTray.Main.v1";
 inline constexpr UINT ShowDetailsMessage = WM_APP + 1;

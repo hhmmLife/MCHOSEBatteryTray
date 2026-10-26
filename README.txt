@@ -1,5 +1,8 @@
-G7BatteryTray 1.1.0
-MCHOSE G7 2.4G 鼠标电量托盘程序（Windows 10/11 x64）
+MCHOSEBatteryTray 1.2.0
+迈从鼠标 2.4G 电量托盘程序（Windows 10/11 x64）
+程序文件名继续使用 G7BatteryTray.exe，兼容原来的配置、自启与通知登记。
+实现 27 个型号变体的协议；本项目目前只有 G7 完成本机实测。
+其他型号完成协议与模拟通信测试，仍待实机验证。完整范围见 COMPATIBILITY.md。
 
 使用
 1. 将整个 G7BatteryTray 文件夹放在一个可写的固定目录，双击 G7BatteryTray.exe。
@@ -28,11 +31,13 @@ data/logs/app.previous.log       上一份日志，最多保留一份
 data/probe.json                 仅 --probe 诊断命令生成
 data/status.json                仅 --status 诊断命令生成
 JSON 写入使用同目录 .tmp 临时文件，成功后原子替换。
-程序只访问 G7 厂商状态接口，不读取鼠标移动或按键数据，不修改 DPI、按键或灯光。
-型号识别：VID A8A5 / PID 2255、Usage Page FF01 / Usage 0010、65 字节报告。
+程序只访问支持型号的厂商状态接口，不读取鼠标移动或按键数据，不修改 DPI、按键或灯光。
+按接收器 VID/PID、厂商集合、报告长度与报告 ID 筛选，三类协议独立解析。
+原始百分比不取整或平滑；错误报文和休眠空响应不会显示为 0%。
+单个托盘图标同时监控一只鼠标，优先上次成功的接收器；每日提醒仍按当前鼠标去重。
 设备路径运行时枚举，不与某个 USB 插口或某台电脑绑定。
 
-低内存设计（1.1.0）
+低内存设计（1.2.0）
 图标用小尺寸 DIB 原生绘制，不加载 GDI+ 或 PNG 解码组件；字体按窗口需求创建和释放。
 设备接口由 Configuration Manager 轻量枚举，不建立完整 SetupAPI 设备上下文。
 常驻进程不初始化通知 COM/WinRT；通知发送、身份修复、通知点击回调由同一个
@@ -89,7 +94,9 @@ PowerShell：
 默认产物位于源码包 build/portable/G7BatteryTray，编译中间文件位于 build/intermediate。
 可用 -OutputRoot 指定运行目录。工具链本身不随运行包分发。
 修改图标后可执行 assets/create-icon.ps1 重新生成图标资源。
+构建后运行 package.ps1，在 dist 中生成运行包、源码包与校验文件，自动排除用户运行数据。
 
 设计参考：https://github.com/Tan-TanZi/InphicBatteryTray
 设备协议核对：迈从官方 https://www.mchose.com.cn/gmouse/ 的 getBatteryInfo。
+其他协议来源见 PROTOCOLS.md；具体型号和验证程度见 COMPATIBILITY.md。
 图标和程序实现为本项目编写，未复制参考项目的素材。
