@@ -1,0 +1,29 @@
+#include <windows.h>
+1 ICON "app.ico"
+1 RT_MANIFEST "app.manifest"
+1 VERSIONINFO
+ FILEVERSION 1,1,0,0
+ PRODUCTVERSION 1,1,0,0
+ FILEFLAGSMASK 0x3fL
+ FILEFLAGS 0
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_APP
+BEGIN
+ BLOCK "StringFileInfo"
+ BEGIN
+  BLOCK "040904b0"
+  BEGIN
+   VALUE "CompanyName", "G7BatteryTray"
+   VALUE "FileDescription", "MCHOSE G7 Battery Tray"
+   VALUE "FileVersion", "1.1.0"
+   VALUE "InternalName", "G7BatteryTray"
+   VALUE "OriginalFilename", "G7BatteryTray.exe"
+   VALUE "ProductName", "G7BatteryTray"
+   VALUE "ProductVersion", "1.1.0"
+  END
+ END
+ BLOCK "VarFileInfo"
+ BEGIN
+  VALUE "Translation", 0x409, 1200
+ END
+END
