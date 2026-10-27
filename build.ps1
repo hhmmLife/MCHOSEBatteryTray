@@ -1,6 +1,6 @@
 param(
     [string]$ToolchainRoot,
-    [string]$OutputRoot = (Join-Path $PSScriptRoot 'build/portable/G7BatteryTray'),
+    [string]$OutputRoot = (Join-Path $PSScriptRoot 'build/portable/MCHOSEBatteryTray'),
     [switch]$Tests
 )
 $ErrorActionPreference = 'Stop'
@@ -16,7 +16,7 @@ try {
     & $taskWindres '-I' 'assets' '-i' 'assets/app.rc' '-o' $taskResource '-O' 'coff'
     if ($LASTEXITCODE) { throw 'Resource compilation failed.' }
     $taskSources = @('src/app.cpp','src/storage.cpp','src/device.cpp','src/device_protocol.cpp','src/notifications.cpp','src/notification_client.cpp','src/tray_icon.cpp')
-    & $taskCompiler '-std=c++20' '-Os' '-DNDEBUG' '-Wall' '-Wextra' '-Wpedantic' '-Wno-unknown-pragmas' '-municode' '-mwindows' '-static' '-Wl,--strip-all' @taskSources $taskResource '-o' (Join-Path $OutputRoot 'G7BatteryTray.exe') '-lcfgmgr32' '-lhid' '-lshell32' '-lshlwapi' '-lpropsys' '-lole32' '-loleaut32' '-luuid' '-lruntimeobject' '-lcomctl32' '-ladvapi32' '-limm32'
+    & $taskCompiler '-std=c++20' '-Os' '-DNDEBUG' '-Wall' '-Wextra' '-Wpedantic' '-Wno-unknown-pragmas' '-municode' '-mwindows' '-static' '-Wl,--strip-all' @taskSources $taskResource '-o' (Join-Path $OutputRoot 'MCHOSEBatteryTray.exe') '-lcfgmgr32' '-lhid' '-lshell32' '-lshlwapi' '-lpropsys' '-lole32' '-loleaut32' '-luuid' '-lruntimeobject' '-lcomctl32' '-ladvapi32' '-limm32'
     if ($LASTEXITCODE) { throw 'Application compilation failed.' }
     Copy-Item -LiteralPath 'README.txt' -Destination $OutputRoot -Force
     Copy-Item -LiteralPath 'THIRD-PARTY-NOTICES.txt' -Destination $OutputRoot -Force
@@ -41,4 +41,4 @@ try {
         if ($LASTEXITCODE) { throw 'Icon tests failed.' }
     }
 } finally { Pop-Location }
-Write-Output (Join-Path $OutputRoot 'G7BatteryTray.exe')
+Write-Output (Join-Path $OutputRoot 'MCHOSEBatteryTray.exe')

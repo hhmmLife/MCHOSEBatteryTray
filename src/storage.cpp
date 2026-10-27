@@ -3,7 +3,7 @@
 #include <mutex>
 #include <stdexcept>
 
-namespace g7 {
+namespace mchose {
 Paths Paths::Locate() {
     std::wstring name(32768,L'\0');
     DWORD count = GetModuleFileNameW(nullptr,name.data(),DWORD(name.size()));
@@ -79,14 +79,14 @@ void Log(const Paths& p,const std::string& message) {
 }
 static constexpr wchar_t RunKey[]=L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 bool StartupRegistered() {
-    DWORD size=0;return RegGetValueW(HKEY_CURRENT_USER,RunKey,StartupValueName,RRF_RT_REG_SZ,nullptr,nullptr,&size)==ERROR_SUCCESS;
+    DWORD size=0;return RegGetValueW(HKEY_CURRENT_USER,RunKey,AppName,RRF_RT_REG_SZ,nullptr,nullptr,&size)==ERROR_SUCCESS;
 }
 void SetStartup(const Paths& p,bool enabled) {
     HKEY key=nullptr;LONG status=RegCreateKeyExW(HKEY_CURRENT_USER,RunKey,0,nullptr,0,KEY_SET_VALUE,nullptr,&key,nullptr);
     if(status!=ERROR_SUCCESS)throw std::runtime_error("Cannot access startup registration");
     if(enabled){std::wstring command=L"\""+p.exe.wstring()+L"\" --background";
-        status=RegSetValueExW(key,StartupValueName,0,REG_SZ,reinterpret_cast<const BYTE*>(command.c_str()),DWORD((command.size()+1)*2));
-    }else{status=RegDeleteValueW(key,StartupValueName);if(status==ERROR_FILE_NOT_FOUND)status=ERROR_SUCCESS;}
+        status=RegSetValueExW(key,AppName,0,REG_SZ,reinterpret_cast<const BYTE*>(command.c_str()),DWORD((command.size()+1)*2));
+    }else{status=RegDeleteValueW(key,AppName);if(status==ERROR_FILE_NOT_FOUND)status=ERROR_SUCCESS;}
     RegCloseKey(key);if(status!=ERROR_SUCCESS)throw std::runtime_error("Cannot update startup registration");
 }
 bool DarkTheme() {

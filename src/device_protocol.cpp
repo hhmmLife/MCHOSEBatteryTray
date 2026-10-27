@@ -3,7 +3,7 @@
 #include <array>
 #include <string>
 
-namespace g7::hid {
+namespace mchose::hid {
 static constexpr Model models[]={
     {L"MCHOSE G7",Protocol::Gmouse,0}, {L"MCHOSE G7 Pro",Protocol::Gmouse,0},
     {L"MCHOSE G3 A",Protocol::Gmouse,0}, {L"MCHOSE G3 V2",Protocol::Gmouse,0},

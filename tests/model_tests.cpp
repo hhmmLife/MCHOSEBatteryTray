@@ -5,7 +5,7 @@
 static int checks=0;
 static void Check(bool value,const char* name){++checks;if(!value){std::cerr<<"FAIL: "<<name<<"\n";std::exit(1);}}
 int main(){
-    using namespace g7;Config c;ReminderState state;
+    using namespace mchose;Config c;ReminderState state;
     LocalTime mon{2026,10,26,1,20,58,59};
     Check(!ReminderDue(c,state,mon),"not before due time");
     mon.minute=59;mon.second=0;

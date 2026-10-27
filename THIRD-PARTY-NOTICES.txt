@@ -1,4 +1,4 @@
-G7BatteryTray uses nlohmann/json v3.12.0 (MIT), compiled into the executable.
+MCHOSEBatteryTray uses nlohmann/json v3.12.0 (MIT), compiled into the executable.
 The complete license follows.
 
 MIT License

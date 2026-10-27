@@ -1,11 +1,10 @@
-MCHOSEBatteryTray 1.2.0
+MCHOSEBatteryTray 1.3.0
 迈从鼠标 2.4G 电量托盘程序（Windows 10/11 x64）
-程序文件名继续使用 G7BatteryTray.exe，兼容原来的配置、自启与通知登记。
 实现 27 个型号变体的协议；本项目目前只有 G7 完成本机实测。
 其他型号完成协议与模拟通信测试，仍待实机验证。完整范围见 COMPATIBILITY.md。
 
 使用
-1. 将整个 G7BatteryTray 文件夹放在一个可写的固定目录，双击 G7BatteryTray.exe。
+1. 将整个 MCHOSEBatteryTray 文件夹放在一个可写的固定目录，双击 MCHOSEBatteryTray.exe。
 2. 图标位于任务栏右下角，可能在“显示隐藏的图标”里。可手动拖到常显区域。
 3. 悬停查看电量；双击查看详情；右键设置、刷新或退出。
 4. 右键“测试 Windows 通知”可检查提醒通道；新配置中“开机自动启动”默认关闭，已有配置保留选择。
@@ -21,7 +20,7 @@ MCHOSEBatteryTray 1.2.0
 同时填写为跳过和补班时，跳过优先。
 
 目录
-G7BatteryTray.exe                程序，不依赖额外运行时安装
+MCHOSEBatteryTray.exe                程序，不依赖额外运行时安装
 README.txt                      本说明
 THIRD-PARTY-NOTICES.txt          开源许可
 data/config.json                配置（首次启动自动生成）
@@ -37,7 +36,7 @@ JSON 写入使用同目录 .tmp 临时文件，成功后原子替换。
 单个托盘图标同时监控一只鼠标，优先上次成功的接收器；每日提醒仍按当前鼠标去重。
 设备路径运行时枚举，不与某个 USB 插口或某台电脑绑定。
 
-低内存设计（1.2.0）
+低内存设计
 图标用小尺寸 DIB 原生绘制，不加载 GDI+ 或 PNG 解码组件；字体按窗口需求创建和释放。
 设备接口由 Configuration Manager 轻量枚举，不建立完整 SetupAPI 设备上下文。
 常驻进程不初始化通知 COM/WinRT；通知发送、身份修复、通知点击回调由同一个
@@ -56,11 +55,13 @@ USB 插拔和恢复运行时立即尝试读取。
 
 移植与移除
 退出程序后搬走整个目录；在新位置运行一次，自动修复已启用的自启路径和通知路径。
+从旧版本升级时，先使用旧版菜单移除系统登记并退出，将 data 复制到新版目录，
+再运行 MCHOSEBatteryTray.exe；移除登记会关闭自启，需要时在新版中重新开启。
 Windows 通知和自启需要少量用户级系统登记，不需要管理员权限：
-- 开始菜单：%APPDATA%\Microsoft\Windows\Start Menu\Programs\G7BatteryTray.lnk
-- 通知 COM：HKCU\Software\Classes\CLSID\{E9C2D221-F9CF-47DD-B821-4C12CE418965}
-- 通知标识：HKCU\Software\Classes\AppUserModelId\G7BatteryTray.Desktop
-- 自启（仅开启时）：HKCU\Software\Microsoft\Windows\CurrentVersion\Run\G7BatteryTray
+- 开始菜单：%APPDATA%\Microsoft\Windows\Start Menu\Programs\MCHOSEBatteryTray.lnk
+- 通知 COM：HKCU\Software\Classes\CLSID\{DC784659-7E43-4284-B903-77EDD179D8EB}
+- 通知标识：HKCU\Software\Classes\AppUserModelId\MCHOSEBatteryTray.Desktop
+- 自启（仅开启时）：HKCU\Software\Microsoft\Windows\CurrentVersion\Run\MCHOSEBatteryTray
 卸载前选择“移除系统登记并退出”，然后删除整个目录。
 普通“退出”保留登记和设置；关闭自启只删除自启项。
 Windows 自身维护的通知设置、缓存、崩溃记录由操作系统管理。
@@ -91,7 +92,7 @@ extraWorkDates: ["2026-10-10"]
 工具链：LLVM-MinGW x64 UCRT，使用 Windows 系统 API，静态链接 C++ 运行库。
 PowerShell：
   .\build.ps1 -ToolchainRoot '你的 llvm-mingw 目录' -Tests
-默认产物位于源码包 build/portable/G7BatteryTray，编译中间文件位于 build/intermediate。
+默认产物位于源码包 build/portable/MCHOSEBatteryTray，编译中间文件位于 build/intermediate。
 可用 -OutputRoot 指定运行目录。工具链本身不随运行包分发。
 修改图标后可执行 assets/create-icon.ps1 重新生成图标资源。
 构建后运行 package.ps1，在 dist 中生成运行包、源码包与校验文件，自动排除用户运行数据。

@@ -2,7 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
-using namespace g7;
+using namespace mchose;
 static int checks=0;
 static void Check(bool value,const char* name){++checks;if(!value){std::cerr<<"FAIL: "<<name<<"\n";std::exit(1);}}
 static std::vector<DWORD> ReadIcon(HICON icon,int size){

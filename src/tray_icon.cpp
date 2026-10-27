@@ -2,7 +2,7 @@
 #include <cmath>
 #include <vector>
 
-namespace g7 {
+namespace mchose {
 namespace {
 struct Rgb {unsigned r,g,b;};
 bool InBolt(float x,float y){

@@ -6,7 +6,7 @@
 #include <set>
 #include <string>
 
-namespace g7 {
+namespace mchose {
 struct Config {
     bool reminders = true;
     bool startup = false;

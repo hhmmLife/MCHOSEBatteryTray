@@ -2,7 +2,7 @@
 #include "common.hpp"
 #include "../third_party/json.hpp"
 
-namespace g7 {
+namespace mchose {
 using Json = nlohmann::json;
 struct Paths {
     fs::path exe, root, data, logs;

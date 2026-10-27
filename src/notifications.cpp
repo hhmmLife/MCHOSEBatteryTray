@@ -15,13 +15,10 @@
 #include <propvarutil.h>
 #include <atomic>
 
-namespace g7 {
+namespace mchose {
 using Microsoft::WRL::ComPtr;
 using namespace ABI::Windows::UI::Notifications;
 using namespace ABI::Windows::Data::Xml::Dom;
-static constexpr CLSID ActivatorClsid={0xe9c2d221,0xf9cf,0x47dd,{0xb8,0x21,0x4c,0x12,0xce,0x41,0x89,0x65}};
-static constexpr wchar_t ClsidKey[]=L"Software\\Classes\\CLSID\\{E9C2D221-F9CF-47DD-B821-4C12CE418965}";
-static constexpr wchar_t AumidKey[]=L"Software\\Classes\\AppUserModelId\\G7BatteryTray.Desktop";
 struct WinString {
     HSTRING value=nullptr;
     explicit WinString(const std::wstring& text){WindowsCreateString(text.c_str(),UINT32(text.size()),&value);}
@@ -29,7 +26,7 @@ struct WinString {
 };
 static HRESULT ShortcutPath(fs::path& out) {
     PWSTR directory=nullptr;HRESULT hr=SHGetKnownFolderPath(FOLDERID_Programs,0,nullptr,&directory);
-    if(SUCCEEDED(hr))out=fs::path(directory)/L"G7BatteryTray.lnk";
+    if(SUCCEEDED(hr))out=fs::path(directory)/ShortcutFilename;
     CoTaskMemFree(directory);return hr;
 }
 static HRESULT RegisterShortcut(const Paths& paths) {
@@ -95,8 +92,7 @@ bool Notifications::Initialize() {
     HRESULT hr=RegisterShortcut(paths_);
     if(SUCCEEDED(hr)){
         HKEY key=nullptr;
-        auto name=std::wstring(ClsidKey)+L"\\LocalServer32";
-        LONG status=RegCreateKeyExW(HKEY_CURRENT_USER,name.c_str(),0,nullptr,0,KEY_SET_VALUE,nullptr,&key,nullptr);
+        LONG status=RegCreateKeyExW(HKEY_CURRENT_USER,ActivatorServerKey,0,nullptr,0,KEY_SET_VALUE,nullptr,&key,nullptr);
         if(status==ERROR_SUCCESS){
             std::wstring command=L"\""+paths_.exe.wstring()+L"\" --toast-activated";
             status=RegSetValueExW(key,nullptr,0,REG_SZ,reinterpret_cast<const BYTE*>(command.c_str()),DWORD((command.size()+1)*2));
@@ -107,10 +103,10 @@ bool Notifications::Initialize() {
     if(SUCCEEDED(hr)){
         // Explicit unpackaged identity avoids waiting for Start-menu indexing.
         HKEY key=nullptr;
-        LONG status=RegCreateKeyExW(HKEY_CURRENT_USER,AumidKey,0,nullptr,0,KEY_SET_VALUE,nullptr,&key,nullptr);
+        LONG status=RegCreateKeyExW(HKEY_CURRENT_USER,AppUserModelKey,0,nullptr,0,KEY_SET_VALUE,nullptr,&key,nullptr);
         if(status==ERROR_SUCCESS){
             const wchar_t* name=NotificationName;
-            const wchar_t* clsid=L"{E9C2D221-F9CF-47DD-B821-4C12CE418965}";
+            const wchar_t* clsid=ActivatorClsidText;
             status=RegSetValueExW(key,L"DisplayName",0,REG_SZ,reinterpret_cast<const BYTE*>(name),DWORD((wcslen(name)+1)*2));
             if(status==ERROR_SUCCESS)status=RegSetValueExW(key,L"CustomActivator",0,REG_SZ,reinterpret_cast<const BYTE*>(clsid),DWORD((wcslen(clsid)+1)*2));
             RegCloseKey(key);
@@ -150,7 +146,7 @@ bool Notifications::Show(const std::wstring& title,const std::wstring& body,bool
     ComPtr<IToastNotification> toast;if(SUCCEEDED(hr)){stage="create toast";hr=factory->CreateToastNotification(document.Get(),&toast);}
     if(SUCCEEDED(hr)){
         ComPtr<IToastNotification2> tagged;
-        if(SUCCEEDED(toast.As(&tagged))){WinString tag(test?L"test":L"battery"),group(L"G7");tagged->put_Tag(tag.value);tagged->put_Group(group.value);}
+        if(SUCCEEDED(toast.As(&tagged))){WinString tag(test?L"test":L"battery"),group(L"MCHOSE");tagged->put_Tag(tag.value);tagged->put_Group(group.value);}
     }
     ComPtr<IToastNotificationManagerStatics> manager;WinString managerClass(L"Windows.UI.Notifications.ToastNotificationManager");
     if(SUCCEEDED(hr)){stage="notification manager";hr=RoGetActivationFactory(managerClass.value,IID_PPV_ARGS(&manager));}
@@ -171,7 +167,7 @@ void Notifications::RemoveRegistration(){
         ComPtr<IToastNotificationHistory> history;if(SUCCEEDED(manager->get_History(&history)))history->ClearWithId(id.value);
     }
     fs::path shortcut;if(SUCCEEDED(ShortcutPath(shortcut))){DeleteFileW(shortcut.c_str());SHChangeNotify(SHCNE_DELETE,SHCNF_PATHW,shortcut.c_str(),nullptr);}
-    RegDeleteTreeW(HKEY_CURRENT_USER,ClsidKey);RegDeleteTreeW(HKEY_CURRENT_USER,AumidKey);
+    RegDeleteTreeW(HKEY_CURRENT_USER,ActivatorClsidKey);RegDeleteTreeW(HKEY_CURRENT_USER,AppUserModelKey);
     Log(paths_,"Removed notification and startup registrations");
 }
 int RunNotificationCommand(const Paths& paths,const std::wstring& command,int percent){

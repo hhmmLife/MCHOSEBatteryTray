@@ -14,13 +14,21 @@
 #include <utility>
 #include "model.hpp"
 
-namespace g7 {
+namespace mchose {
 namespace fs = std::filesystem;
 inline constexpr wchar_t AppName[] = L"MCHOSEBatteryTray";
-inline constexpr wchar_t StartupValueName[] = L"G7BatteryTray"; // Preserve existing installations.
-inline constexpr wchar_t NotificationName[] = L"迈从鼠标电量";
-inline constexpr wchar_t AppId[] = L"G7BatteryTray.Desktop";
-inline constexpr wchar_t WindowClass[] = L"G7BatteryTray.Main.v1";
+inline constexpr wchar_t NotificationName[] = L"MCHOSEBatteryTray";
+inline constexpr wchar_t AppId[] = L"MCHOSEBatteryTray.Desktop";
+inline constexpr wchar_t WindowClass[] = L"MCHOSEBatteryTray.Main.v1";
+inline constexpr wchar_t PopupClass[] = L"MCHOSEBatteryTray.Popup";
+inline constexpr wchar_t SettingsClass[] = L"MCHOSEBatteryTray.Settings";
+inline constexpr wchar_t InstanceMutex[] = L"Local\\MCHOSEBatteryTray.Instance.v1";
+inline constexpr wchar_t ShortcutFilename[] = L"MCHOSEBatteryTray.lnk";
+inline constexpr CLSID ActivatorClsid={0xdc784659,0x7e43,0x4284,{0xb9,0x03,0x77,0xed,0xd1,0x79,0xd8,0xeb}};
+inline constexpr wchar_t ActivatorClsidText[]=L"{DC784659-7E43-4284-B903-77EDD179D8EB}";
+inline constexpr wchar_t ActivatorClsidKey[]=L"Software\\Classes\\CLSID\\{DC784659-7E43-4284-B903-77EDD179D8EB}";
+inline constexpr wchar_t ActivatorServerKey[]=L"Software\\Classes\\CLSID\\{DC784659-7E43-4284-B903-77EDD179D8EB}\\LocalServer32";
+inline constexpr wchar_t AppUserModelKey[]=L"Software\\Classes\\AppUserModelId\\MCHOSEBatteryTray.Desktop";
 inline constexpr UINT ShowDetailsMessage = WM_APP + 1;
 inline std::wstring Wide(const std::string& text) {
     if (text.empty()) return {};

@@ -1,7 +1,7 @@
 #pragma once
 #include "storage.hpp"
 
-namespace g7 {
+namespace mchose {
 class Notifications {
     const Paths& paths_;
     DWORD classCookie_=0;

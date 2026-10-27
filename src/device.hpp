@@ -4,7 +4,7 @@
 #include <optional>
 #include <vector>
 
-namespace g7 {
+namespace mchose {
 struct BatteryResult {
     bool valid=false, receiverPresent=false, charging=false;
     int percent=-1;

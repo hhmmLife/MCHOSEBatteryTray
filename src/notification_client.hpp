@@ -1,7 +1,7 @@
 #pragma once
 #include "storage.hpp"
 
-namespace g7 {
+namespace mchose {
 bool NotificationIdentityCurrent(const Paths& paths);
 // The same executable performs COM/WinRT work in a short-lived helper process.
 // No request files, resident helper, working-set trimming, or busy polling.

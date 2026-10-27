@@ -2,8 +2,8 @@
 1 ICON "app.ico"
 1 RT_MANIFEST "app.manifest"
 1 VERSIONINFO
- FILEVERSION 1,2,0,0
- PRODUCTVERSION 1,2,0,0
+ FILEVERSION 1,3,0,0
+ PRODUCTVERSION 1,3,0,0
  FILEFLAGSMASK 0x3fL
  FILEFLAGS 0
  FILEOS VOS_NT_WINDOWS32
@@ -15,11 +15,11 @@ BEGIN
   BEGIN
    VALUE "CompanyName", "MCHOSEBatteryTray"
    VALUE "FileDescription", "MCHOSE Mouse Battery Tray"
-   VALUE "FileVersion", "1.2.0"
-   VALUE "InternalName", "G7BatteryTray"
-   VALUE "OriginalFilename", "G7BatteryTray.exe"
+   VALUE "FileVersion", "1.3.0"
+   VALUE "InternalName", "MCHOSEBatteryTray"
+   VALUE "OriginalFilename", "MCHOSEBatteryTray.exe"
    VALUE "ProductName", "MCHOSEBatteryTray"
-   VALUE "ProductVersion", "1.2.0"
+   VALUE "ProductVersion", "1.3.0"
   END
  END
  BLOCK "VarFileInfo"

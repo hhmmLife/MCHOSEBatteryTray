@@ -1,13 +1,13 @@
 param(
-    [string]$RuntimeRoot = (Join-Path $PSScriptRoot 'build/portable/G7BatteryTray'),
+    [string]$RuntimeRoot = (Join-Path $PSScriptRoot 'build/portable/MCHOSEBatteryTray'),
     [string]$OutputRoot = (Join-Path $PSScriptRoot 'dist'),
-    [string]$Version = '1.2.0'
+    [string]$Version = '1.3.0'
 )
 $ErrorActionPreference = 'Stop'
 if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw 'Version must be numeric major.minor.patch.' }
 $RuntimeRoot = [IO.Path]::GetFullPath($RuntimeRoot)
 $OutputRoot = [IO.Path]::GetFullPath($OutputRoot)
-$executable = Join-Path $RuntimeRoot 'G7BatteryTray.exe'
+$executable = Join-Path $RuntimeRoot 'MCHOSEBatteryTray.exe'
 if ((Get-Item -LiteralPath $executable).VersionInfo.FileVersion -ne $Version) { throw 'Executable version does not match the package version.' }
 $staging = Join-Path $PSScriptRoot ('build/package/' + [guid]::NewGuid().ToString('N'))
 $portable = Join-Path $staging 'MCHOSEBatteryTray'

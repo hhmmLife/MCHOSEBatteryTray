@@ -6,7 +6,7 @@
 #include <cfgmgr32.h>
 #include <cwctype>
 
-namespace g7 {
+namespace mchose {
 static void FeatureIds(PHIDP_PREPARSED_DATA data,const HIDP_CAPS& caps,hid::Descriptor& descriptor){
     auto add=[&](UCHAR id){descriptor.shortFeature|=id==0x11;descriptor.longFeature|=id==0x12;descriptor.zeroFeature|=id==0;};
     USHORT count=caps.NumberFeatureValueCaps;

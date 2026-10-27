@@ -5,7 +5,7 @@
 static int checks=0;
 static void Check(bool value,const char* name){++checks;if(!value){std::cerr<<"FAIL: "<<name<<"\n";std::exit(1);}}
 int wmain(int argc,wchar_t** argv){
-    using namespace g7;if(argc!=2)return 2;
+    using namespace mchose;if(argc!=2)return 2;
     Paths paths;paths.root=fs::absolute(argv[1]);paths.data=paths.root/L"data";paths.logs=paths.data/L"logs";paths.Ensure();
     Config original;original.hour=21;original.minute=5;original.threshold=30;original.pollSeconds=120;
     original.skipDates={"2026-10-01"};original.extraDates={"2026-10-10"};

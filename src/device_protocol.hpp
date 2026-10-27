@@ -3,7 +3,7 @@
 #include <span>
 #include <string_view>
 
-namespace g7::hid {
+namespace mchose::hid {
 enum class Protocol { Gmouse, Inverted, A5 };
 struct Model { std::wstring_view name; Protocol protocol; uint16_t id; };
 std::span<const Model> Models();

@@ -14,7 +14,7 @@
 #include <sstream>
 #include <vector>
 
-namespace g7 {
+namespace mchose {
 constexpr UINT QueryDone=WM_APP+2, TestNotificationMessage=WM_APP+3,SettingsMessage=WM_APP+4,HideWindowsMessage=WM_APP+5,RemoveMessage=WM_APP+6,StatusMessage=WM_APP+7;
 constexpr UINT NotificationDone=WM_APP+8;
 constexpr UINT ReleaseFontsMessage=WM_APP+9;
@@ -178,7 +178,7 @@ class App {
     }
     void ShowPopup(){
         EnsureFonts(true);
-        if(!popup_)popup_=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_NOACTIVATE|WS_EX_TOPMOST,L"G7BatteryTray.Popup",L"鼠标电量详情",WS_POPUP|WS_BORDER,
+        if(!popup_)popup_=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_NOACTIVATE|WS_EX_TOPMOST,PopupClass,L"鼠标电量详情",WS_POPUP|WS_BORDER,
                                           0,0,1,1,window_,nullptr,GetModuleHandleW(nullptr),this);
         if(!popup_)return;
         POINT cursor;GetCursorPos(&cursor);MONITORINFO monitor{};monitor.cbSize=sizeof(monitor);
@@ -270,7 +270,7 @@ class App {
         if(settings_){SetForegroundWindow(settings_);return;}
         EnsureFonts();
         RECT area{0,0,Scale(460,dpi_),Scale(505,dpi_)};AdjustWindowRectExForDpi(&area,WS_CAPTION|WS_SYSMENU,FALSE,WS_EX_APPWINDOW,dpi_);
-        settings_=CreateWindowExW(WS_EX_APPWINDOW,L"G7BatteryTray.Settings",L"MCHOSEBatteryTray 设置",WS_CAPTION|WS_SYSMENU,
+        settings_=CreateWindowExW(WS_EX_APPWINDOW,SettingsClass,L"MCHOSEBatteryTray 设置",WS_CAPTION|WS_SYSMENU,
             CW_USEDEFAULT,CW_USEDEFAULT,area.right-area.left,area.bottom-area.top,nullptr,nullptr,GetModuleHandleW(nullptr),this);
         if(!settings_)return;
         Control(L"BUTTON",L"启用低电量定时提醒",BS_AUTOCHECKBOX|WS_TABSTOP,20,18,400,25,101);
@@ -377,8 +377,8 @@ public:
         WNDCLASSEXW cls{};cls.cbSize=sizeof(cls);cls.hInstance=instance;cls.lpfnWndProc=MainProc;cls.lpszClassName=WindowClass;
         classIcon_=MakeIcon(32,100,true,false,false);
         cls.hIcon=classIcon_;cls.hCursor=LoadCursorW(nullptr,IDC_ARROW);RegisterClassExW(&cls);
-        cls.lpfnWndProc=PopupProc;cls.lpszClassName=L"G7BatteryTray.Popup";cls.style=CS_DBLCLKS;RegisterClassExW(&cls);
-        cls.lpfnWndProc=SettingsProc;cls.lpszClassName=L"G7BatteryTray.Settings";cls.hbrBackground=reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);RegisterClassExW(&cls);
+        cls.lpfnWndProc=PopupProc;cls.lpszClassName=PopupClass;cls.style=CS_DBLCLKS;RegisterClassExW(&cls);
+        cls.lpfnWndProc=SettingsProc;cls.lpszClassName=SettingsClass;cls.hbrBackground=reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);RegisterClassExW(&cls);
         taskbarCreated_=RegisterWindowMessageW(L"TaskbarCreated");
         window_=CreateWindowExW(WS_EX_TOOLWINDOW,WindowClass,AppName,WS_OVERLAPPED,0,0,0,0,nullptr,nullptr,instance,this);
         if(!window_)throw std::runtime_error("Cannot create tray event window");
@@ -386,7 +386,7 @@ public:
         deviceNotify_=RegisterDeviceNotificationW(window_,&filter,DEVICE_NOTIFY_WINDOW_HANDLE);
         result_.message=L"正在读取电量…";UpdateTray();
         worker_=std::thread([this]{Worker();});StartQuery();ArmSchedule();
-        Log(paths_,"MCHOSEBatteryTray 1.2.0 started");
+        Log(paths_,"MCHOSEBatteryTray 1.3.0 started");
         if(details)PostMessageW(window_,ShowDetailsMessage,0,0);if(test)PostMessageW(window_,TestNotificationMessage,0,0);
         if(settings)PostMessageW(window_,SettingsMessage,0,0);
         MSG message;while(GetMessageW(&message,nullptr,0,0)>0){
@@ -399,7 +399,7 @@ public:
 }
 
 int WINAPI wWinMain(HINSTANCE,HINSTANCE,PWSTR,int){
-    using namespace g7;
+    using namespace mchose;
     // This thread only edits numeric times, thresholds and ISO dates. Prevent
     // unnecessary IME/TSF initialization for our windows; other apps are untouched.
     ImmDisableIME(GetCurrentThreadId());
@@ -438,7 +438,7 @@ int WINAPI wWinMain(HINSTANCE,HINSTANCE,PWSTR,int){
             Handle stop(CreateEventW(nullptr,TRUE,FALSE,nullptr));
             return RunNotificationHelper(paths,L"--notification-unregister",stop.get())?0:1;
         }
-        Handle mutex(CreateMutexW(nullptr,FALSE,L"Local\\G7BatteryTray.Instance.v1"));
+        Handle mutex(CreateMutexW(nullptr,FALSE,InstanceMutex));
         if(GetLastError()==ERROR_ALREADY_EXISTS){if(running)PostMessageW(running,test?TestNotificationMessage:settings?SettingsMessage:background?HideWindowsMessage:ShowDetailsMessage,0,0);return 0;}
         if(!mutex.valid())throw std::runtime_error("Cannot create single-instance mutex");
         SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
